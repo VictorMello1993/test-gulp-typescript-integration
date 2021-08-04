@@ -6,6 +6,11 @@ const browserify = require('browserify')
 const source = require('vinyl-source-stream')
 const tsify = require('tsify')
 
+//gulp-uglify permite que o arquivo final app.js seja minificado
+const uglify = require('gulp-uglify')
+
+const rename = require('gulp-rename')
+
 //Excluindo fisicamente a pasta 'dist' criada na build
 function clearDist(callback){
   return del(['dist'])
@@ -26,7 +31,14 @@ function generateJS(callback){
     .pipe(dest('dist')) //Pasta de destino onde será criado o arquivo app.js
 }
 
-exports.default = series(
+function gerarJSProducao(){
+  return src('dist/app.js').pipe(rename('app.min.js')).pipe(uglify()).pipe(dest('dist'))
+}
+
+exports.default = series( //Processos a serem executados em série
   clearDist,
-  parallel(generateJS, copyHTML)
+  parallel(generateJS, copyHTML), /*No método parallel, 
+                                  serão definidos quais métodos que serão executados em paralelo
+                                  em um processo de build do Gulp*/
+  gerarJSProducao
 )
